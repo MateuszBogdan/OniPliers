@@ -6,6 +6,7 @@ using KMod;
 using PeterHan.PLib.Actions;
 using PeterHan.PLib.Core;
 using PeterHan.PLib.Database;
+using PeterHan.PLib.Options;
 using UnityEngine;
 
 namespace Pliers
@@ -17,6 +18,8 @@ namespace Pliers
             base.OnLoad(harmony);
             PUtil.InitLibrary();
             new PLocalization().Register();
+            var options = new POptions();
+            options.RegisterOptions(this, typeof(PliersConfig));
             
             Assembly currentAssembly = Assembly.GetExecutingAssembly();
             string currentAssemblyDirectory = Path.GetDirectoryName(currentAssembly.Location);
@@ -59,7 +62,6 @@ namespace Pliers
     public static class ToolMenu_OnPrefabInit {
         public static void Postfix()
         {
-            Debug.Log("ToolMenu.OnPrefabInit");
             if (Assets.Sprites.ContainsKey(PliersAssets.PLIERS_ICON_SPRITE.name))
                 Assets.Sprites.Remove(PliersAssets.PLIERS_ICON_SPRITE.name);
             Assets.Sprites.Add(PliersAssets.PLIERS_ICON_SPRITE.name, PliersAssets.PLIERS_ICON_SPRITE);
@@ -69,7 +71,6 @@ namespace Pliers
     [HarmonyPatch(typeof(ToolMenu), "CreateBasicTools")]
     public static class ToolMenu_CreateBasicTools {
         public static void Prefix(ToolMenu __instance) {
-            Debug.Log("ToolMenu.CreateBasicTools");
             __instance.basicTools.Add(ToolMenu.CreateToolCollection(
                 PliersStrings.STRING_PLIERS_NAME,
                 PliersAssets.PLIERS_ICON_NAME,
@@ -80,11 +81,123 @@ namespace Pliers
             ));
         }
     }
+    //
+    // [HarmonyPatch(typeof(ToolMenu), "BuildRowToggles")]
+    // public static class ToolMenu_BuildRowToggles {
+    //     public static void Prefix(IList<ToolMenu.ToolCollection> row)
+    //     {
+    //         Debug.Log("Next row");
+    //         foreach (var tool in row)
+    //         {
+    //             Debug.Log(tool.text);    
+    //         }
+    //                     
+    //     }
+    // }
 
     [HarmonyPatch(typeof(Game), "DestroyInstances")]
     public static class Game_DestroyInstances {
         public static void Postfix() {
             PliersTool.DestroyInstance();
+        }
+    }
+
+    [HarmonyPatch(typeof(GasConduitConfig), nameof(GasConduitConfig.DoPostConfigureComplete))]
+    public static class GasConduitConfig_DoPostConfigureComplete
+    {
+        public static void Prefix(GameObject go)
+        {
+            Debug.Log("Gasconduid init pliers workable");
+            go.AddComponent<PliersWorkable>();
+        }
+    }
+    
+    [HarmonyPatch(typeof(GasConduitRadiantConfig), nameof(GasConduitRadiantConfig.DoPostConfigureComplete))]
+    public static class GasConduitRadiantConfig_DoPostConfigureComplete
+    {
+        public static void Prefix(GameObject go)
+        {
+            go.AddComponent<PliersWorkable>();
+        }
+    }
+    
+    [HarmonyPatch(typeof(InsulatedGasConduitConfig), nameof(InsulatedGasConduitConfig.DoPostConfigureComplete))]
+    public static class InsulatedGasConduitConfig_DoPostConfigureComplete
+    {
+        public static void Prefix(GameObject go)
+        {
+            go.AddComponent<PliersWorkable>();
+        }
+    }
+    
+    [HarmonyPatch(typeof(LiquidConduitConfig), nameof(LiquidConduitConfig.DoPostConfigureComplete))]
+    public static class LiquidConduitConfig_DoPostConfigureComplete
+    {
+        public static void Prefix(GameObject go)
+        {
+            go.AddComponent<PliersWorkable>();
+        }
+    }
+    
+    [HarmonyPatch(typeof(LiquidConduitRadiantConfig), nameof(LiquidConduitRadiantConfig.DoPostConfigureComplete))]
+    public static class LiquidConduitRadiantConfig_DoPostConfigureComplete
+    {
+        public static void Prefix(GameObject go)
+        {
+            go.AddComponent<PliersWorkable>();
+        }
+    }
+    
+    [HarmonyPatch(typeof(InsulatedLiquidConduitConfig), nameof(InsulatedLiquidConduitConfig.DoPostConfigureComplete))]
+    public static class InsulatedLiquidConduitConfig_DoPostConfigureComplete
+    {
+        public static void Prefix(GameObject go)
+        {
+            go.AddComponent<PliersWorkable>();
+        }
+    }
+    
+    [HarmonyPatch(typeof(BaseWireConfig), nameof(BaseWireConfig.DoPostConfigureComplete))]
+    public static class BaseWireConfig_DoPostConfigureComplete
+    {
+        public static void Prefix(GameObject go)
+        {
+            go.AddComponent<PliersWorkable>();
+        }
+    }
+    
+    [HarmonyPatch(typeof(BaseLogicWireConfig), nameof(BaseLogicWireConfig.DoPostConfigureComplete))]
+    public static class BaseLogicWireConfig_DoPostConfigureComplete
+    {
+        public static void Prefix(GameObject go)
+        {
+            go.AddComponent<PliersWorkable>();
+        }
+    }
+    
+    [HarmonyPatch(typeof(SolidConduitConfig), nameof(SolidConduitConfig.DoPostConfigureComplete))]
+    public static class SolidConduitConfig_DoPostConfigureComplete
+    {
+        public static void Prefix(GameObject go)
+        {
+            go.AddComponent<PliersWorkable>();
+        }
+    }
+    
+    [HarmonyPatch(typeof(Assets), "OnPrefabInit")]
+    public static class Assets_OnPrefabInit
+    {
+        public static void Prefix(Assets __instance)
+        {
+            var sprite = Utilities.CreateSpriteDXT5(Assembly.GetExecutingAssembly().GetManifestResourceStream("Pliers.images.image_wirecutter_status.dds"), 256, 256);
+            sprite.name = PliersAssets.PLIERS_STATUS_ICON_NAME;
+            var tintedSprite = new TintedSprite
+            {
+                name = PliersAssets.PLIERS_STATUS_ICON_NAME,
+                color = Color.black,
+                sprite = sprite
+            };
+            __instance.TintedSpriteAssets.Add(tintedSprite);
         }
     }
 }

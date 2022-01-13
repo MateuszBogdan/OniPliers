@@ -1,7 +1,8 @@
-﻿using System.Collections.Generic;
-using System.Reflection;
+﻿using System;
+using System.Collections.Generic;
 using HarmonyLib;
 using UnityEngine;
+using PeterHan.PLib.Options;
 
 namespace Pliers
 {
@@ -13,11 +14,14 @@ namespace Pliers
             UtilityConnections.Up,
             UtilityConnections.Down
         };
+
+        private PliersConfig config;
         
         public static PliersTool Instance { get; private set; }
 
         public PliersTool() {
             Instance = this;
+            config = POptions.ReadSettings<PliersConfig>() ?? new PliersConfig();
         }
         
         public static void DestroyInstance() {
@@ -30,14 +34,14 @@ namespace Pliers
             visualizer = new GameObject("PliersVisualizer");
             visualizer.SetActive(false);
 
-            GameObject offsetObject = new GameObject();
-            SpriteRenderer spriteRenderer = offsetObject.AddComponent<SpriteRenderer>();
+            var offsetObject = new GameObject();
+            var spriteRenderer = offsetObject.AddComponent<SpriteRenderer>();
             spriteRenderer.color = PliersAssets.PLIERS_COLOR_DRAG;
             spriteRenderer.sprite = PliersAssets.PLIERS_VISUALIZER_SPRITE;
 
             offsetObject.transform.SetParent(visualizer.transform);
             offsetObject.transform.localPosition = new Vector3(0, Grid.HalfCellSizeInMeters);
-            Sprite sprite = spriteRenderer.sprite;
+            var sprite = spriteRenderer.sprite;
             offsetObject.transform.localScale = new Vector3(
                 Grid.CellSizeInMeters / (sprite.texture.width / sprite.pixelsPerUnit),
                 Grid.CellSizeInMeters / (sprite.texture.height / sprite.pixelsPerUnit)
@@ -46,10 +50,10 @@ namespace Pliers
             offsetObject.SetLayerRecursively(LayerMask.NameToLayer("Overlay"));
             visualizer.transform.SetParent(transform);
 
-            FieldInfo areaVisualizerField = AccessTools.Field(typeof(DragTool), "areaVisualizer");
-            FieldInfo areaVisualizerSpriteRendererField = AccessTools.Field(typeof(DragTool), "areaVisualizerSpriteRenderer");
+            var areaVisualizerField = AccessTools.Field(typeof(DragTool), "areaVisualizer");
+            var areaVisualizerSpriteRendererField = AccessTools.Field(typeof(DragTool), "areaVisualizerSpriteRenderer");
 
-            GameObject areaVisualizer = Util.KInstantiate((GameObject)AccessTools.Field(typeof(DeconstructTool), "areaVisualizer").GetValue(DeconstructTool.Instance));
+            var areaVisualizer = Util.KInstantiate((GameObject)AccessTools.Field(typeof(DeconstructTool), "areaVisualizer").GetValue(DeconstructTool.Instance));
             areaVisualizer.SetActive(false);
 
             areaVisualizer.name = "PliersAreaVisualizer";
@@ -76,8 +80,8 @@ namespace Pliers
             base.OnDragComplete(cursorDown, cursorUp);
 
             if (hasFocus) {
-                Grid.PosToXY(cursorDown, out int x0, out int y0);
-                Grid.PosToXY(cursorUp, out int x1, out int y1);
+                Grid.PosToXY(cursorDown, out var x0, out var y0);
+                Grid.PosToXY(cursorUp, out var x1, out var y1);
 
                 if (x0 > x1) {
                     Util.Swap(ref x0, ref x1);
@@ -87,13 +91,13 @@ namespace Pliers
                     Util.Swap(ref y0, ref y1);
                 }
 
-                for (int x = x0; x <= x1; ++x) {
-                    for (int y = y0; y <= y1; ++y) {
-                        int cell = Grid.XYToCell(x, y);
+                for (var x = x0; x <= x1; ++x) {
+                    for (var y = y0; y <= y1; ++y) {
+                        var cell = Grid.XYToCell(x, y);
 
                         if (Grid.IsVisible(cell)) {
-                            for (int layer = 0; layer < Grid.ObjectLayers.Length; ++layer) {
-                                GameObject gameObject = Grid.Objects[cell, layer];
+                            for (var layer = 0; layer < Grid.ObjectLayers.Length; ++layer) {
+                                var gameObject = Grid.Objects[cell, layer];
                                 Building building;
 
                                 if (gameObject != null && (building = gameObject.GetComponent<Building>()) != null && IsActiveLayer(GetFilterLayerFromGameObject(gameObject))) {
@@ -101,19 +105,19 @@ namespace Pliers
 
                                     if ((utilityNetworkManager = building.Def.BuildingComplete.GetComponent<IHaveUtilityNetworkMgr>()) != null) {
                                         UtilityConnections connectionsToRemove = 0;
-                                        UtilityConnections buildingConnections = utilityNetworkManager.GetNetworkManager().GetConnections(cell, false);
+                                        var buildingConnections = utilityNetworkManager.GetNetworkManager().GetConnections(cell, false);
 
-                                        foreach (UtilityConnections utilityConnection in connections) {
+                                        foreach (var utilityConnection in connections) {
                                             if ((buildingConnections & utilityConnection) != utilityConnection) {
                                                 continue;
                                             }
 
-                                            int offsetCell = Grid.OffsetCell(cell, Utilities.ConnectionsToOffset(utilityConnection));
+                                            var offsetCell = Grid.OffsetCell(cell, Utilities.ConnectionsToOffset(utilityConnection));
                                             if (Grid.IsValidBuildingCell(offsetCell)) {
-                                                Grid.CellToXY(offsetCell, out int x2, out int y2);
+                                                Grid.CellToXY(offsetCell, out var x2, out var y2);
 
                                                 if (x2 >= x0 && x2 <= x1 && y2 >= y0 && y2 <= y1) {
-                                                    GameObject otherGameObject = Grid.Objects[offsetCell, layer];
+                                                    var otherGameObject = Grid.Objects[offsetCell, layer];
                                                     Building otherBuilding;
 
                                                     if (otherGameObject != null && (otherBuilding = otherGameObject.GetComponent<Building>()) != null && otherBuilding.Def.BuildingComplete.GetComponent<IHaveUtilityNetworkMgr>() != null && IsActiveLayer(GetFilterLayerFromGameObject(gameObject))) {
@@ -124,19 +128,58 @@ namespace Pliers
                                         }
 
                                         if (connectionsToRemove != 0) {
-                                            if (building.GetComponent<KAnimGraphTileVisualizer>() != null) {
-                                                building.GetComponent<KAnimGraphTileVisualizer>().UpdateConnections(buildingConnections & ~connectionsToRemove);
-                                                building.GetComponent<KAnimGraphTileVisualizer>().Refresh();
-                                            }
-
-                                            TileVisualizer.RefreshCell(cell, building.Def.TileLayer, building.Def.ReplacementLayer);
-                                            utilityNetworkManager.GetNetworkManager()?.ForceRebuildNetworks();
+                                            ProcessPliers(gameObject, building, buildingConnections, connectionsToRemove, utilityNetworkManager, cell);
                                         }
                                     }
                                 }
                             }
                         }
                     }
+                }
+            }
+        }
+
+        private void ProcessPliers(GameObject gameObject, Building building, UtilityConnections buildingConnections, UtilityConnections connectionsToRemove, IHaveUtilityNetworkMgr utilityNetworkManager, int cell)
+        {
+            if (config.ErrandEnabled)
+            {
+                ProcessPliersErrand(gameObject, building, buildingConnections, connectionsToRemove, utilityNetworkManager, cell);
+            }
+            else
+            {
+                ProcessPliersInstant(building, buildingConnections, connectionsToRemove, utilityNetworkManager, cell);
+            }
+        }
+
+        private void ProcessPliersInstant(Building building, UtilityConnections buildingConnections, UtilityConnections connectionsToRemove, IHaveUtilityNetworkMgr utilityNetworkManager, int cell)
+        {
+            if (building.GetComponent<KAnimGraphTileVisualizer>() != null) {
+                building.GetComponent<KAnimGraphTileVisualizer>().UpdateConnections(buildingConnections & ~connectionsToRemove);
+                building.GetComponent<KAnimGraphTileVisualizer>().Refresh();
+            }
+
+            TileVisualizer.RefreshCell(cell, building.Def.TileLayer, building.Def.ReplacementLayer);
+            utilityNetworkManager.GetNetworkManager()?.ForceRebuildNetworks();
+        }
+
+        private void ProcessPliersErrand(GameObject gameObject, Building building, UtilityConnections buildingConnections, UtilityConnections connectionsToRemove, IHaveUtilityNetworkMgr utilityNetworkManager, int cell)
+        {
+            var pliersWorkable = gameObject.GetComponent<PliersWorkable>();
+            if (pliersWorkable is null)
+            {
+                throw new Exception(gameObject.GetType().Name);
+            }
+            if (DebugHandler.InstantBuildMode)
+            {
+                pliersWorkable.JobFinished();
+            }
+            else
+            {
+                pliersWorkable.MarkForCut(connectionsToRemove);
+                var prioritizable = gameObject.GetComponent<Prioritizable>();
+                if (prioritizable is not null)
+                {
+                    prioritizable.SetMasterPriority(ToolMenu.Instance.PriorityScreen.GetLastSelectedPriority());
                 }
             }
         }

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project>
+  <Import Condition=" !Exists('Directory.Build.props.user') " Project="Directory.Build.props.default" />
+  <Import Condition=" Exists('Directory.Build.props.user') " Project="Directory.Build.props.user" />
+
+  <ItemDefinitionGroup>
+    <Reference Private="False" />
+    <ProjectReference Private="True" />
+  </ItemDefinitionGroup>
+
+  <ItemGroup>
+    <Reference Include="0Harmony" HintPath="$(GameFolder)/0Harmony.dll" />
+    <Reference Include="Assembly-CSharp" HintPath="$(GameFolder)/Assembly-CSharp.dll" />
+    <Reference Include="Assembly-CSharp-firstpass" HintPath="$(GameFolder)/Assembly-CSharp-firstpass.dll" />
+    <Reference Include="Newtonsoft.Json" HintPath="$(GameFolder)/Newtonsoft.Json.dll" />
+    <Reference Include="UnityEngine" HintPath="$(GameFolder)/UnityEngine.dll" />
+    <Reference Include="UnityEngine.CoreModule" HintPath="$(GameFolder)/UnityEngine.CoreModule.dll" />
+    <Reference Include="UnityEngine.ImageConversionModule" HintPath="$(GameFolder)/UnityEngine.ImageConversionModule.dll" />
+    <Reference Include="UnityEngine.InputLegacyModule" HintPath="$(GameFolder)/UnityEngine.InputLegacyModule.dll" />
+    <Reference Include="Unity.TextMeshPro" HintPath="$(GameFolder)/Unity.TextMeshPro.dll" />
+    <Reference Include="UnityEngine.TextRenderingModule" HintPath="$(GameFolder)/UnityEngine.TextRenderingModule.dll" />
+    <Reference Include="UnityEngine.UI" HintPath="$(GameFolder)/UnityEngine.UI.dll" />
+    <Reference Include="UnityEngine.UIModule" HintPath="$(GameFolder)/UnityEngine.UIModule.dll" />
+  </ItemGroup>
+  <PropertyGroup>
+	<APIVersion>2</APIVersion>
+    <Authors>Mateusz Bogdan</Authors>
+    <Copyright>Copyright ©Mateusz Bogdan 2022</Copyright>
+    <TargetFramework>net471</TargetFramework>
+    <SupportedContent>VANILLA_ID,EXPANSION1_ID</SupportedContent>
+    <LastWorkingBuild>0</LastWorkingBuild>
+    <DistributeMod>true</DistributeMod>
+    <ArchivedVersionPath></ArchivedVersionPath>
+  </PropertyGroup>
+</Project>

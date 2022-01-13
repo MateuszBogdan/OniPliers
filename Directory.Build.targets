@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project>
+  <Target Name="SetPlatform" BeforeTargets="CoreCompile">
+    <PropertyGroup>
+      <PlatformTarget>AnyCPU</PlatformTarget>
+    </PropertyGroup>
+  </Target>
+
+  <!-- <Target Name="PLibTranslationEmbeddedResources" BeforeTargets="ResolveReferences" Condition=" '$(AssemblyName)' == 'PLibCore' "> -->
+    <!-- <ItemGroup> -->
+      <!-- <PLibTranslationFiles Include="../PLibCore/translations/*.po" /> -->
+      <!-- <EmbeddedResource Include="%(PLibTranslationFiles.Identity)" -->
+        <!-- LogicalName="PeterHan.PLib.Core.PLibStrings.%(PLibTranslationFiles.Filename)%(PLibTranslationFiles.Extension)" /> -->
+    <!-- </ItemGroup> -->
+  <!-- </Target> -->
+
+  <Target Name="ClearGameFolderCopyLocal" AfterTargets="ResolveAssemblyReferences">
+    <ItemGroup>
+      <ReferenceCopyLocalPaths Remove="$(GameFolder)\*" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="WriteModInfoFile" BeforeTargets="PreBuildEvent" Condition=" '$(DistributeMod)' == 'true' ">
+    <PropertyGroup>
+      <ModInfoFile>$(IntermediateOutputPath)\mod_info.yaml</ModInfoFile>
+      <ModInfoFileContent>
+supportedContent: $(SupportedContent)
+minimumSupportedBuild: $(LastWorkingBuild)
+version: $(FileVersion)
+APIVersion: $(APIVersion)
+      </ModInfoFileContent>
+    </PropertyGroup>
+    <WriteLinesToFile File="$(ModInfoFile)" Overwrite="true" Lines="$(ModInfoFileContent)"/>
+  </Target>
+
+  <Target Name="WriteModDescriptionFile" BeforeTargets="PreBuildEvent" Condition=" '$(DistributeMod)' == 'true' ">
+    <PropertyGroup>
+      <ModDescriptionFile>$(IntermediateOutputPath)\mod.yaml</ModDescriptionFile>
+      <ModDescriptionFileContent>
+title: "$(Product)"
+description: "$(Description)"
+staticID: Bodzio.$(AssemblyName)
+      </ModDescriptionFileContent>
+    </PropertyGroup>
+    <WriteLinesToFile File="$(ModDescriptionFile)" Overwrite="true" Lines="$(ModDescriptionFileContent)"/>
+  </Target>
+
+  <Target Name="CopyArtifactsToInstallFolder" AfterTargets="Build" Condition=" '$(DistributeMod)' == 'true' ">
+    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+      <RootInstallFolder>..\Release\$(ProjectName)</RootInstallFolder>
+    </PropertyGroup>
+    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+      <RootInstallFolder>$(ModFolder)\$(ProjectName)</RootInstallFolder>
+    </PropertyGroup>
+    <PropertyGroup>
+      <InstallFolder>$(RootInstallFolder)$(ArchivedVersionPath)</InstallFolder>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <AnimFiles Include="$(ProjectDir)\anim\**\*.*" />
+      <TranslationFiles Include="$(ProjectDir)\translations\*.po" />
+      <WorldGenFiles Include="$(ProjectDir)\worldgen\**\*.*" />
+      <WorldGenTemplates Include="$(ProjectDir)\templates\**\*.*" />
+      <YamlFiles Include="$(ProjectDir)\*.yaml" />
+      <DllFiles Include="$(TargetDir)\*.dll" />
+    </ItemGroup>  
+
+    <Copy SourceFiles="@(AnimFiles)" DestinationFiles="@(AnimFiles->'$(InstallFolder)\anim\%(RecursiveDir)%(Filename)%(Extension)')" />
+    <Copy SourceFiles="@(TranslationFiles)" DestinationFolder="$(InstallFolder)\translations" />
+    <Copy SourceFiles="@(WorldGenFiles)" DestinationFiles="@(WorldGenFiles->'$(InstallFolder)\worldgen\%(RecursiveDir)%(Filename)%(Extension)')" />
+    <Copy SourceFiles="@(WorldGenTemplates)" DestinationFiles="@(WorldGenTemplates->'$(InstallFolder)\templates\%(RecursiveDir)%(Filename)%(Extension)')" />
+    <Copy SourceFiles="@(YamlFiles)" DestinationFolder="$(InstallFolder)" />
+    <Copy SourceFiles="$(ModInfoFile)" DestinationFolder="$(InstallFolder)" />
+    <Copy SourceFiles="$(ModDescriptionFile)" DestinationFolder="$(RootInstallFolder)" />
+    <Copy SourceFiles="$(ProjectDir)\Preview.png" DestinationFiles="$(InstallFolder)\preview.png" Condition=" $(CopyPreview) == true " />
+    <Copy SourceFiles="$(TargetPath)" DestinationFiles="$(InstallFolder)\$(TargetFileName)" />
+    <Copy SourceFiles="@(DllFiles)" DestinationFolder="$(InstallFolder)" />
+  </Target>
+</Project>
