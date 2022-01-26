@@ -128,7 +128,7 @@ namespace Pliers
                                         }
 
                                         if (connectionsToRemove != 0) {
-                                            ProcessPliers(gameObject, building, buildingConnections, connectionsToRemove, utilityNetworkManager, cell);
+                                            ProcessPliers(gameObject, building, buildingConnections, connectionsToRemove, utilityNetworkManager, cell, layer);
                                         }
                                     }
                                 }
@@ -139,11 +139,15 @@ namespace Pliers
             }
         }
 
-        private void ProcessPliers(GameObject gameObject, Building building, UtilityConnections buildingConnections, UtilityConnections connectionsToRemove, IHaveUtilityNetworkMgr utilityNetworkManager, int cell)
+        private void ProcessPliers(GameObject gameObject, Building building, UtilityConnections buildingConnections, UtilityConnections connectionsToRemove, IHaveUtilityNetworkMgr utilityNetworkManager, int cell, int layer)
         {
             if (config.ErrandEnabled)
             {
-                ProcessPliersErrand(gameObject, building, buildingConnections, connectionsToRemove, utilityNetworkManager, cell);
+                if (connectionsToRemove.HasFlag(UtilityConnections.Up) ||
+                    connectionsToRemove.HasFlag(UtilityConnections.Left))
+                {
+                    ProcessPliersErrand(gameObject, connectionsToRemove & (UtilityConnections.Up | UtilityConnections.Left));    
+                }
             }
             else
             {
@@ -162,7 +166,7 @@ namespace Pliers
             utilityNetworkManager.GetNetworkManager()?.ForceRebuildNetworks();
         }
 
-        private void ProcessPliersErrand(GameObject gameObject, Building building, UtilityConnections buildingConnections, UtilityConnections connectionsToRemove, IHaveUtilityNetworkMgr utilityNetworkManager, int cell)
+        private void ProcessPliersErrand(GameObject gameObject, UtilityConnections connectionsToRemove)
         {
             var pliersWorkable = gameObject.GetComponent<PliersWorkable>();
             if (pliersWorkable is null)

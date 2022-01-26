@@ -102,6 +102,37 @@ public class PliersWorkable: Workable
         GetComponent<Prioritizable>().RemoveRef();
     }
 
+    private ObjectLayer GetLayer()
+    {
+        if (conduit is not null)
+        {
+            return conduit.ConduitType switch
+            {
+                ConduitType.Gas => ObjectLayer.GasConduit,
+                ConduitType.Liquid => ObjectLayer.LiquidConduit,
+                ConduitType.Solid => ObjectLayer.SolidConduit,
+                _ => throw new ArgumentException()
+            };
+        }
+
+        if (wire is not null)
+        {
+            return ObjectLayer.WireTile;
+        }
+
+        if (logicWire is not null)
+        {
+            return ObjectLayer.LogicWire;
+        }
+
+        if (solidConduit is not null)
+        {
+            return ObjectLayer.SolidConduit;
+        }
+
+        throw new ArgumentException(building.Def.name);
+    }
+
     private StatusItem GetStatusItem()
     {
         if (conduit is not null)
@@ -135,22 +166,58 @@ public class PliersWorkable: Workable
 
     public void JobFinished()
     {
-        var utilityNetworkManager = building.Def.BuildingComplete.GetComponent<IHaveUtilityNetworkMgr>();
+        var utilityNetworkManagerProvider = building.Def.BuildingComplete.GetComponent<IHaveUtilityNetworkMgr>();
+        var utilityNetworkManager = utilityNetworkManagerProvider.GetNetworkManager();
         var cell = building.GetCell();
-        var buildingConnections = utilityNetworkManager.GetNetworkManager().GetConnections(cell, false);
-        if (building.GetComponent<KAnimGraphTileVisualizer>() != null) {
-            building.GetComponent<KAnimGraphTileVisualizer>().UpdateConnections(buildingConnections & ~connectionsToRemove);
-            building.GetComponent<KAnimGraphTileVisualizer>().Refresh();
-        }
-
-        TileVisualizer.RefreshCell(cell, building.Def.TileLayer, building.Def.ReplacementLayer);
-        utilityNetworkManager.GetNetworkManager()?.ForceRebuildNetworks();
-
+        DisconnectCell(cell, building, utilityNetworkManager, connectionsToRemove);
+        UpdateNeighbours(utilityNetworkManager);
+        
+        utilityNetworkManagerProvider.GetNetworkManager()?.ForceRebuildNetworks();
         connectionsToRemove = 0;
         CleanUpVisualization();
         chore = null;
         shouldShowSkillPerkStatusItem = false;
         UpdateStatusItem();
+    }
+
+    private void UpdateNeighbours(IUtilityNetworkMgr networkMgr)
+    {
+        var cell = building.GetCell();
+        if (connectionsToRemove.HasFlag(UtilityConnections.Up))
+        {
+            DisconnectNeighbour(UtilityConnections.Up, cell, networkMgr, UtilityConnections.Down);
+        }
+
+        if (connectionsToRemove.HasFlag(UtilityConnections.Left))
+        {
+            DisconnectNeighbour(UtilityConnections.Left, cell, networkMgr, UtilityConnections.Right);
+        }
+    }
+
+    private void DisconnectNeighbour(UtilityConnections neighbourDirection, int cell, IUtilityNetworkMgr networkMgr,
+        UtilityConnections targetCellDirection)
+    {
+        var offsetCell = Grid.OffsetCell(cell, Utilities.ConnectionsToOffset(neighbourDirection));
+        if (!Grid.IsValidBuildingCell(offsetCell)) return;
+        
+        var otherGameObject = Grid.Objects[offsetCell, (int)GetLayer()];
+        Building otherBuilding;
+        if (otherGameObject is not null && (otherBuilding = otherGameObject.GetComponent<Building>()) is not null &&
+            otherBuilding.Def.BuildingComplete.GetComponent<IHaveUtilityNetworkMgr>() != null)
+        {
+            DisconnectCell(offsetCell, otherBuilding, networkMgr, targetCellDirection);
+        }
+    }
+
+    private static void DisconnectCell(int cell, Building building, IUtilityNetworkMgr utilityNetworkManager,
+        UtilityConnections connectionsToRemove)
+    {
+        var buildingConnections = utilityNetworkManager.GetConnections(cell, false);
+        if (building.GetComponent<KAnimGraphTileVisualizer>() != null) {
+            building.GetComponent<KAnimGraphTileVisualizer>().UpdateConnections(buildingConnections & ~connectionsToRemove);
+            building.GetComponent<KAnimGraphTileVisualizer>().Refresh();
+        }
+        TileVisualizer.RefreshCell(cell, building.Def.TileLayer, building.Def.ReplacementLayer);
     }
 
     public void MarkForCut(UtilityConnections connectionsToRemove)

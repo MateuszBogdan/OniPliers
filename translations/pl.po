@@ -3,9 +3,9 @@ msgstr ""
 "Project-Id-Version: \n"
 "POT-Creation-Date: \n"
 "PO-Revision-Date: \n"
-"Last-Translator: Ventulus\n"
+"Last-Translator: Bodzio\n"
 "Language-Team: \n"
-"Language: zh_CN\n"
+"Language: pl_PL\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -16,49 +16,51 @@ msgstr ""
 #. Pliers.PliersStrings.STRING_PLIERS_ACTION_BACK
 msgctxt "Pliers.PliersStrings.STRING_PLIERS_ACTION_BACK"
 msgid "BACK"
-msgstr "返回"
+msgstr "Cofnij"
 
 #. Pliers.PliersStrings.STRING_PLIERS_ACTION_DRAG
 msgctxt "Pliers.PliersStrings.STRING_PLIERS_ACTION_DRAG"
 msgid "DRAG"
-msgstr "拖动"
+msgstr "Przeciągnij"
 
 #. Pliers.PliersStrings.STRING_PLIERS_NAME
 msgctxt "Pliers.PliersStrings.STRING_PLIERS_NAME"
 msgid "Pliers"
-msgstr "剪刀"
+msgstr "Szczypce"
 
 #. Pliers.PliersStrings.STRING_PLIERS_OPTIONS_ERRANDS
 msgctxt "Pliers.PliersStrings.STRING_PLIERS_OPTIONS_ERRANDS"
 msgid "Pliers require errand"
-msgstr "剪刀需要复制人跑腿"
+msgstr "Szczypce wymagają pracy"
 
 #. Pliers.PliersStrings.STRING_PLIERS_OPTIONS_ERRANDS_TOOLTIP
 msgctxt "Pliers.PliersStrings.STRING_PLIERS_OPTIONS_ERRANDS_TOOLTIP"
 msgid ""
 "Pliers are no longer instant. Instead they require duplicant operation to "
 "complete"
-msgstr "剪刀不再是即时生效。它们需要复制人来操作完成"
+msgstr ""
+"Szczypce nie są już natychmiastowe. Zamiast tego wymagają operacji "
+"duplikanta."
 
 #. Pliers.PliersStrings.STRING_PLIERS_STATUS_ITEM_NAME
 msgctxt "Pliers.PliersStrings.STRING_PLIERS_STATUS_ITEM_NAME"
 msgid "Marked for Cut"
-msgstr "标记剪断"
+msgstr "Oznaczone do przecięcia"
 
 #. Pliers.PliersStrings.STRING_PLIERS_STATUS_ITEM_TOOLTIP
 msgctxt "Pliers.PliersStrings.STRING_PLIERS_STATUS_ITEM_TOOLTIP"
 msgid "Awaiting a Duplicant to cut wire"
-msgstr "等待复制人剪断线路"
+msgstr "Oczekiwanie aż duplikant przetnie przewód"
 
 #. Pliers.PliersStrings.STRING_PLIERS_TOOLTIP
 msgctxt "Pliers.PliersStrings.STRING_PLIERS_TOOLTIP"
 msgid "Disconnect utility networks {0}"
-msgstr "断开公共网络{0}"
+msgstr "Odłączenie sieci"
 
 #. Pliers.PliersStrings.STRING_PLIERS_TOOLTIP_TITLE
 msgctxt "Pliers.PliersStrings.STRING_PLIERS_TOOLTIP_TITLE"
 msgid "PLIERS"
-msgstr "剪刀"
+msgstr "Szczypce"
 
 #~ msgctxt "STRINGS.INPUT_BINDINGS.PLIB.269"
 #~ msgid "Pliers"
