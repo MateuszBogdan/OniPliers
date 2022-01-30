@@ -146,7 +146,7 @@ namespace Pliers
                 if (connectionsToRemove.HasFlag(UtilityConnections.Up) ||
                     connectionsToRemove.HasFlag(UtilityConnections.Left))
                 {
-                    ProcessPliersErrand(gameObject, connectionsToRemove & (UtilityConnections.Up | UtilityConnections.Left));    
+                    ProcessPliersErrand(gameObject, building, buildingConnections, connectionsToRemove, utilityNetworkManager, cell);    
                 }
             }
             else
@@ -166,12 +166,14 @@ namespace Pliers
             utilityNetworkManager.GetNetworkManager()?.ForceRebuildNetworks();
         }
 
-        private void ProcessPliersErrand(GameObject gameObject, UtilityConnections connectionsToRemove)
+        private void ProcessPliersErrand(GameObject gameObject, Building building, UtilityConnections buildingConnections, UtilityConnections connectionsToRemove, IHaveUtilityNetworkMgr utilityNetworkManager, int cell)
         {
             var pliersWorkable = gameObject.GetComponent<PliersWorkable>();
             if (pliersWorkable is null)
             {
-                throw new Exception(gameObject.GetType().Name);
+                ProcessPliersInstant(building, buildingConnections, connectionsToRemove, utilityNetworkManager, cell);
+                // building is under construction
+                return;
             }
             if (DebugHandler.InstantBuildMode)
             {
@@ -179,7 +181,7 @@ namespace Pliers
             }
             else
             {
-                pliersWorkable.MarkForCut(connectionsToRemove);
+                pliersWorkable.MarkForCut(connectionsToRemove & (UtilityConnections.Up | UtilityConnections.Left));
                 var prioritizable = gameObject.GetComponent<Prioritizable>();
                 if (prioritizable is not null)
                 {

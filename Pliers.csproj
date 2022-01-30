@@ -78,7 +78,7 @@
         <Product>Pliers 2021</Product>
         <LastWorkingBuild>490405</LastWorkingBuild>
         <Description>Updated version of pliers mod with errand support</Description>
-        <FileVersion>1.1.2</FileVersion>
+        <FileVersion>1.1.3</FileVersion>
     </PropertyGroup>
 
 </Project>
